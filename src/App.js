@@ -115,7 +115,7 @@ class AppComponent extends React.Component {
   }
 
   render() {
-    const { t } = this.props;
+    const { t, i18n } = this.props;
     let sinsList = this.buildSinsList();
 
     let appClass = "App full-screen-app";
@@ -135,6 +135,13 @@ class AppComponent extends React.Component {
                 <Nav.Link href="/help">{t('navbar.help')}</Nav.Link>
                 <Nav.Link href="/about">{t('navbar.about')}</Nav.Link>
               </Nav>
+              <select value={i18n.resolvedLanguage} onChange={(e) => {
+                e.persist();
+                i18n.changeLanguage(e.target.value);
+              }}>
+                <option value="en">🇺🇸 English</option>
+                <option value="es">🇪🇸 Español</option>
+              </select>
               <Nav.Link onClick={this.clearAll}><i className="fa fa-ban"></i> {t('navbar.clear')}</Nav.Link>
             </Navbar.Collapse>
           </Navbar>
