@@ -4,10 +4,16 @@ import ExamineItem from './ExamineItem';
 import { withTranslation } from 'react-i18next';
 
 class ExamineListComponent extends React.Component {
+  
   render() {
     const { t, sinsdb } = this.props;
+    
+    let userPreferences = JSON.parse(window.localStorage.getItem('preferences'))
 
-    let sins = sinsdb.sins.reduce((obj, sin) => {
+    const filterSinsForPreferences = sinsdb.sins.filter(sin => sin.married === userPreferences.married && sin[userPreferences.ageGroup] === true);
+
+    // let sins = sinsdb.sins.reduce((obj, sin) => {
+    let sins = filterSinsForPreferences.reduce((obj, sin) => {
       if (!obj.hasOwnProperty(sin.commandment_id)) {
         obj[sin.commandment_id] = [];
       }

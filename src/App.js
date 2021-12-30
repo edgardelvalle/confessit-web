@@ -10,13 +10,14 @@ import Col from 'react-bootstrap/Col';
 import Swiper from 'react-id-swiper';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import {BrowserRouter, Switch, Route} from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import About from './About';
 import Help from './Help';
 import Prayers from './Prayers';
 import AddButton from './AddButton';
 import { withTranslation } from 'react-i18next';
 import LoadingComponent from './LoadingComponent';
+import Preferences from './Preferences';
 
 class AppComponent extends React.Component {
   swiperParams = {
@@ -25,9 +26,9 @@ class AppComponent extends React.Component {
     breakpoints: {
       1024: {
         slidesPerView: 3,
-        spaceBetween: 10
-      }
-    }
+        spaceBetween: 10,
+      },
+    },
   };
 
   constructor(props) {
@@ -39,13 +40,20 @@ class AppComponent extends React.Component {
     } else {
       this.state = {
         selectedSinIds: [],
-        customSins: []
+        customSins: [],
       };
     }
 
-    this.sinsById = new Map(sinsdb.sins.map(s =>
-      [s.sin_id, s]
-    ));
+    let preferences = localStorage.getItem('preferences');
+    if (!preferences) {
+      let initialPreferences = JSON.stringify({
+        married: true,
+        ageGroup: 'adult',
+      });
+      window.localStorage.setItem('preferences', initialPreferences);
+    }
+
+    this.sinsById = new Map(sinsdb.sins.map((s) => [s.sin_id, s]));
 
     // This binding is necessary to make `this` work in the callback
     this.addSinId = this.addSinId.bind(this);
@@ -60,18 +68,16 @@ class AppComponent extends React.Component {
     const { t } = this.props;
     let sinIds = this.state.selectedSinIds;
 
-    return sinIds.map(id =>
-      ({
+    return sinIds
+      .map((id) => ({
         id: id,
-        text: t(`sins.${id}.text_past`)
-      })
-    ).concat(
-      this.state.customSins.map(text =>
-        ({
-          text: text
-        })
-      )
-    );
+        text: t(`sins.${id}.text_past`),
+      }))
+      .concat(
+        this.state.customSins.map((text) => ({
+          text: text,
+        }))
+      );
   }
 
   persistData() {
@@ -80,71 +86,91 @@ class AppComponent extends React.Component {
   }
 
   addSinId(id) {
-    this.setState(state => ({
-      selectedSinIds: state.selectedSinIds.concat([id])
-    }), this.persistData);
+    this.setState(
+      (state) => ({
+        selectedSinIds: state.selectedSinIds.concat([id]),
+      }),
+      this.persistData
+    );
   }
 
   removeSinItem(sinItem) {
-    if (sinItem.hasOwnProperty("id") && sinItem.id !== null) {
-      this.setState(state => ({
-        selectedSinIds: state.selectedSinIds.filter(s => s !== sinItem.id)
-      }), this.persistData);
+    if (sinItem.hasOwnProperty('id') && sinItem.id !== null) {
+      this.setState(
+        (state) => ({
+          selectedSinIds: state.selectedSinIds.filter((s) => s !== sinItem.id),
+        }),
+        this.persistData
+      );
     } else {
       this.removeCustomSin(sinItem.text);
     }
   }
 
   addCustomSin(text) {
-    this.setState(state => ({
-      customSins: state.customSins.concat([text])
-    }), this.persistData);
+    this.setState(
+      (state) => ({
+        customSins: state.customSins.concat([text]),
+      }),
+      this.persistData
+    );
   }
 
   removeCustomSin(text) {
-    this.setState(state => ({
-      customSins: state.customSins.filter(s => s !== text)
-    }), this.persistData);
+    this.setState(
+      (state) => ({
+        customSins: state.customSins.filter((s) => s !== text),
+      }),
+      this.persistData
+    );
   }
 
   clearAll() {
-    this.setState(_ => ({
-      selectedSinIds: [],
-      customSins: []
-    }), this.persistData);
+    this.setState(
+      (_) => ({
+        selectedSinIds: [],
+        customSins: [],
+      }),
+      this.persistData
+    );
   }
 
   render() {
     const { t } = this.props;
     let sinsList = this.buildSinsList();
 
-    let appClass = "App full-screen-app";
-    if (window.location.pathname !== "/") {
-      appClass = "App";
+    let appClass = 'App full-screen-app';
+    if (window.location.pathname !== '/') {
+      appClass = 'App';
     }
 
     return (
       <BrowserRouter>
         <div className={appClass}>
-          <Navbar sticky="top" variant="dark" bg="primary" expand="lg">
-            <Navbar.Brand href="/"><h1>ConfessIt</h1></Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav text-white">
-              <Nav className="mr-auto text-white">
-                <Nav.Link href="/prayers">{t('navbar.prayers')}</Nav.Link>
-                <Nav.Link href="/help">{t('navbar.help')}</Nav.Link>
-                <Nav.Link href="/about">{t('navbar.about')}</Nav.Link>
+          <Navbar sticky='top' variant='dark' bg='primary' expand='lg'>
+            <Navbar.Brand href='/'>
+              <h1>ConfessIt</h1>
+            </Navbar.Brand>
+            <Navbar.Toggle aria-controls='basic-navbar-nav' />
+            <Navbar.Collapse id='basic-navbar-nav text-white'>
+              <Nav className='mr-auto text-white'>
+                <Nav.Link href='/prayers'>{t('navbar.prayers')}</Nav.Link>
+                <Nav.Link href='/help'>{t('navbar.help')}</Nav.Link>
+                <Nav.Link href='/about'>{t('navbar.about')}</Nav.Link>
+                <Nav.Link href='/preferences'>Preferences</Nav.Link>
               </Nav>
-              <Nav.Link onClick={this.clearAll}><i className="fa fa-ban"></i> {t('navbar.clear')}</Nav.Link>
+              <Nav.Link onClick={this.clearAll}>
+                <i className='fa fa-ban'></i> {t('navbar.clear')}
+              </Nav.Link>
             </Navbar.Collapse>
           </Navbar>
           <Switch>
-            <Route exact path="/">
+            <Route exact path='/'>
               <Container fluid={true}>
-                <Row className="h-100">
-                  <Col xs="12" className="h-100">
+                <Row className='h-100'>
+                  <Col xs='12' className='h-100'>
                     <Swiper {...this.swiperParams}>
-                      <div className="col-scroll">
+                      <div className='col-scroll'>
                         <ExamineList
                           sinsdb={sinsdb}
                           selectedSinIds={this.state.selectedSinIds}
@@ -154,13 +180,13 @@ class AppComponent extends React.Component {
                           onRemoveCustomSin={this.removeCustomSin}
                         />
                       </div>
-                      <div className="col-scroll">
+                      <div className='col-scroll'>
                         <SinsList
                           sinsList={sinsList}
                           onRemoveSinItem={this.removeSinItem}
                         />
                       </div>
-                      <div className="col-scroll">
+                      <div className='col-scroll'>
                         <Walkthrough sinsList={sinsList} />
                       </div>
                     </Swiper>
@@ -169,14 +195,17 @@ class AppComponent extends React.Component {
                 <AddButton addCustomSin={this.addCustomSin} />
               </Container>
             </Route>
-            <Route path="/prayers">
+            <Route path='/prayers'>
               <Prayers />
             </Route>
-            <Route path="/help">
+            <Route path='/help'>
               <Help />
             </Route>
-            <Route path="/about">
+            <Route path='/about'>
               <About />
+            </Route>
+            <Route path='/preferences'>
+              <Preferences />
             </Route>
           </Switch>
         </div>
